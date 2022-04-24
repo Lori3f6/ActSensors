@@ -1,7 +1,7 @@
 package land.melon.lab.actsensors;
 
-import land.melon.lab.actsensors.objective.PlayerObjective;
-import land.melon.lab.actsensors.objective.SeparateObjective;
+import land.melon.lab.actsensors.objective.active.PlayerObjective;
+import land.melon.lab.actsensors.objective.active.SeparateObjective;
 import land.melon.lab.actsensors.tag.PlayerTagTrigger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -56,7 +56,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new SeparateObjective("weather", (s, k) -> {
             var world = s.getWorld(k);
             if (world == null) return -1;
-            else return world.hasStorm() ? 1 : 0;
+            else return world.hasStorm() ? world.isThundering() ? 2 : 1 : 0;
         }, Bukkit.getWorlds().stream().map(WorldInfo::getName).toList()));
 
         registrable.forEach(Registerable::register);
