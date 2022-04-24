@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SpigotLoader extends JavaPlugin implements Listener {
     private final List<Registerable> registrable = new ArrayList<>();
@@ -46,7 +47,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         }));
 
         //-------------------------
-        // Indicator Objectives
+        // Player Indicator Objectives
         //-------------------------
 
         //light objective
@@ -61,12 +62,30 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new PlayerObjective("sky_light", p ->
                 p.getLocation().getBlock().getLightFromSky()
         ));
+
+        //-------------------------
+        // Separate Indicator Objectives
+        //-------------------------
+
         //weather objective
         enableTrigger(new SeparateObjective("weather", (s, k) -> {
             var world = s.getWorld(k);
             if (world == null) return -1;
             else return world.hasStorm() ? world.isThundering() ? 2 : 1 : 0;
         }, Bukkit.getWorlds().stream().map(WorldInfo::getName).toList()));
+
+        //random generator
+        var random = new Random();
+        enableTrigger(new SeparateObjective("random", (s, k) -> {
+            if (k.startsWith("pos"))
+                return random.nextInt(0, 65536);
+            else if (k.startsWith("neg"))
+                return -random.nextInt(0, 65536);
+            else if (k.startsWith("gen"))
+                return random.nextInt(0, 65536) - 32768;
+            else return 0;
+        }, List.of("pos_0", "pos_1", "pos_2", "pos_3", "pos_4", "pos_5", "pos_6", "pos_7",
+                "neg_0", "neg_1", "neg_2", "neg_3", "gen_0", "gen_1", "gen_2", "gen_3")));
 
         //-------------------------
         // Value Modifier

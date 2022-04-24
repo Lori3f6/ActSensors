@@ -31,10 +31,10 @@ _For easier identification, objectives has a `+` prefix. It will not be specific
 
 ### Separate Indicator Objectives
 
-| Objective | Entries         | Value                                                                                           |
-|-----------|-----------------|-------------------------------------------------------------------------------------------------|
-| weather   | `#<world_name>` | indicates the weather of each world <br/> 0 for sunny, 1 for rainy/snowy and 2 for thunderstorm |
-
+| Objective | Entries                                                                   | Value                                                                                                                                                             |
+|-----------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| weather   | `#<world_name>`                                                           | indicates the weather of each world <br/> 0 for sunny, 1 for rainy/snowy and 2 for thunderstorm                                                                   |
+| random    | `#pos_<channel>(0-7)`<br/>`#neg_<channel>(0-3)`<br/>`#gen_<channel>(0-3)` | random value <br/>`#pos...` and `#neg...` are positive and negative values from 0 to 65535 (absolute value)<br/> `#gen...` is a random value from -32768 to 32767 |
 ### Value Modifiers
 
 | Objective       | Entries         | Value              | Valid Range | Description                        |
