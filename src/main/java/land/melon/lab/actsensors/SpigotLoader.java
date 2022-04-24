@@ -5,6 +5,8 @@ import land.melon.lab.actsensors.active.objective.SeparateObjective;
 import land.melon.lab.actsensors.active.tag.PlayerTagTrigger;
 import land.melon.lab.actsensors.passive.objective.ValueModifier;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,12 +17,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+
+import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
 public class SpigotLoader extends JavaPlugin implements Listener {
     private final List<Registerable> registrable = new ArrayList<>();
     private final List<PlayerLoginTrigger> playerLoginTriggers = new ArrayList<>();
     private final List<GeneralTrigger> generalTriggers = new ArrayList<>();
+
+    private final double HEALTH_SCALE = 1000.0D;
 
     @Override
     public void onEnable() {
@@ -62,6 +69,12 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new PlayerObjective("sky_light", p ->
                 p.getLocation().getBlock().getLightFromSky()
         ));
+        //health objective
+        enableTrigger(new PlayerObjective("health", p -> (int) (p.getHealth() * HEALTH_SCALE)));
+        //foodLevel objective
+        enableTrigger(new PlayerObjective("food_level", HumanEntity::getFoodLevel));
+        //air objective
+        enableTrigger(new PlayerObjective("air", LivingEntity::getRemainingAir));
 
         //-------------------------
         // Separate Indicator Objectives
@@ -73,7 +86,6 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             if (world == null) return -1;
             else return world.hasStorm() ? world.isThundering() ? 2 : 1 : 0;
         }, Bukkit.getWorlds().stream().map(WorldInfo::getName).toList()));
-
         //random generator
         var random = new Random();
         enableTrigger(new SeparateObjective("random", (s, k) -> {
@@ -90,16 +102,37 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         //-------------------------
         // Value Modifier
         //-------------------------
-        enableTrigger(new ValueModifier("fire_tick_mfr", (p, v) -> {
+        //fireTick modifier
+        enableTrigger(new ValueModifier("alt_fire_tick", (p, v) -> {
             p.setFireTicks(v);
             return -1;
-        }, t -> t > 0));
-
-        enableTrigger(new ValueModifier("freeze_tick_mfr", (p, v) -> {
+        }, t -> t >= 0));
+        //freezeTick modifier
+        enableTrigger(new ValueModifier("alt_freeze_tick", (p, v) -> {
             p.setFreezeTicks(v);
             return -1;
-        }, t -> t > 0));
+        }, t -> t >= 0));
+        //health modifier
+        enableTrigger(new ValueModifier("alt_health", (p, v) -> {
+            var healthValue = v / HEALTH_SCALE;
+            var maxHealth = Objects.requireNonNull(p.getAttribute(GENERIC_MAX_HEALTH)).getValue();
+            p.setHealth(Math.min(healthValue, maxHealth));
+            return -1;
+        }, t -> t >= 0));
+        //foodLevel modifier
+        enableTrigger(new ValueModifier("alt_food_level", (p, v) -> {
+            p.setFoodLevel(Math.min(v, 20));
+            return -1;
+        }, t -> t >= 0));
+        //air modifier
+        enableTrigger(new ValueModifier("alt_air", (p, v) -> {
+            p.setRemainingAir(v);
+            return -1;
+        }, t -> t >= 0));
 
+        //-------------------------
+        // Final Setup
+        //-------------------------
         registrable.forEach(Registerable::register);
         Bukkit.getScheduler().runTaskTimer(this, () ->
                         generalTriggers.forEach(GeneralTrigger::trigger)
