@@ -1,4 +1,4 @@
-package land.melon.lab.actsensors.tag;
+package land.melon.lab.actsensors.active.tag;
 
 import land.melon.lab.actsensors.GeneralTrigger;
 import land.melon.lab.actsensors.PlayerLoginTrigger;

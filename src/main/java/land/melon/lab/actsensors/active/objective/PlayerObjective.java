@@ -1,6 +1,7 @@
-package land.melon.lab.actsensors.objective;
+package land.melon.lab.actsensors.active.objective;
 
 import land.melon.lab.actsensors.GeneralTrigger;
+import land.melon.lab.actsensors.PlayerLoginTrigger;
 import land.melon.lab.actsensors.Registerable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;

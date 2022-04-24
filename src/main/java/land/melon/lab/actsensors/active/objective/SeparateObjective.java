@@ -1,4 +1,4 @@
-package land.melon.lab.actsensors.objective;
+package land.melon.lab.actsensors.active.objective;
 
 import land.melon.lab.actsensors.Registerable;
 import land.melon.lab.actsensors.GeneralTrigger;

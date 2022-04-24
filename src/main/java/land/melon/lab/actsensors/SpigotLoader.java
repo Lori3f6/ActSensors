@@ -1,8 +1,9 @@
 package land.melon.lab.actsensors;
 
-import land.melon.lab.actsensors.objective.active.PlayerObjective;
-import land.melon.lab.actsensors.objective.active.SeparateObjective;
-import land.melon.lab.actsensors.tag.PlayerTagTrigger;
+import land.melon.lab.actsensors.active.objective.PlayerObjective;
+import land.melon.lab.actsensors.active.objective.SeparateObjective;
+import land.melon.lab.actsensors.active.tag.PlayerTagTrigger;
+import land.melon.lab.actsensors.passive.objective.ValueModifier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,6 +23,11 @@ public class SpigotLoader extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+
+        //-------------------------
+        // Indicator tags
+        //-------------------------
+
         //isSprinting tag
         enableTrigger(new PlayerTagTrigger("isSprinting", Player::isSprinting));
         //isFlying tag
@@ -39,6 +45,9 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             return true;
         }));
 
+        //-------------------------
+        // Indicator Objectives
+        //-------------------------
 
         //light objective
         enableTrigger(new PlayerObjective("light", p ->
@@ -59,10 +68,23 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             else return world.hasStorm() ? world.isThundering() ? 2 : 1 : 0;
         }, Bukkit.getWorlds().stream().map(WorldInfo::getName).toList()));
 
+        //-------------------------
+        // Value Modifier
+        //-------------------------
+        enableTrigger(new ValueModifier("fire_tick_mfr", (p, v) -> {
+            p.setFireTicks(v);
+            return -1;
+        }, t -> t > 0));
+
+        enableTrigger(new ValueModifier("freeze_tick_mfr", (p, v) -> {
+            p.setFreezeTicks(v);
+            return -1;
+        }, t -> t > 0));
+
         registrable.forEach(Registerable::register);
         Bukkit.getScheduler().runTaskTimer(this, () ->
                         generalTriggers.forEach(GeneralTrigger::trigger)
-                , 200,1);
+                , 200, 1);
     }
 
     @Override
