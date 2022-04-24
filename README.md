@@ -12,12 +12,12 @@ tick.
 
 ### Indicator tags
 
-| Tag         | Description                                   |
-|-------------|-----------------------------------------------|
-| isSprinting | exist if a player is sprinting                |
-| isFlying    | exist if a player is flying                   |
-| isSneaking  | exist if a player is sneaking                 |
-| isExposing  | exist if there is no solid blocks over player |
+| Tag         | Description                                    |
+|-------------|------------------------------------------------|
+| isSprinting | exist if a player is sprinting                 |
+| isFlying    | exist if a player is flying                    |
+| isSneaking  | exist if a player is sneaking                  |
+| isExposing  | exist if there is no solid blocks above player |
 
 ### Player Indicator Objectives
 
