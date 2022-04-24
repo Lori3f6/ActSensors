@@ -1,0 +1,4 @@
+name: ActSensors
+main: land.melon.lab.actsensors.SpigotLoader
+version: ${project.version}-${jenkinsBuildNumber}
+api-version: 1.18
