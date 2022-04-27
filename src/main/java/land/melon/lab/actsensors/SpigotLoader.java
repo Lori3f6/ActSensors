@@ -28,7 +28,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
     private final List<PlayerLoginTrigger> playerLoginTriggers = new ArrayList<>();
     private final List<GeneralTrigger> generalTriggers = new ArrayList<>();
 
-    private final double HEALTH_SCALE = 1000.0D;
+    private final double DOUBLE_TO_INT_SCALE = 1000.0D;
 
     @Override
     public void onEnable() {
@@ -71,7 +71,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
                 p.getLocation().getBlock().getLightFromSky()
         ));
         //health objective
-        enableTrigger(new PlayerObjective("health", p -> (int) (p.getHealth() * HEALTH_SCALE)));
+        enableTrigger(new PlayerObjective("health", p -> (int) (p.getHealth() * DOUBLE_TO_INT_SCALE)));
         //foodLevel objective
         enableTrigger(new PlayerObjective("food_level", HumanEntity::getFoodLevel));
         //air objective
@@ -107,67 +107,67 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new ValueModifier("alt_fire_tick", (p, v) -> {
             p.setFireTicks(v);
             return -1;
-        }, t -> t >= 0));
+        }, t -> t >= 0, -1));
         //freezeTick modifier
         enableTrigger(new ValueModifier("alt_freeze_tick", (p, v) -> {
             p.setFreezeTicks(v);
             return -1;
-        }, t -> t >= 0));
+        }, t -> t >= 0, -1));
         //health modifier
         enableTrigger(new ValueModifier("alt_health", (p, v) -> {
-            var healthValue = v / HEALTH_SCALE;
+            var healthValue = v / DOUBLE_TO_INT_SCALE;
             var maxHealth = Objects.requireNonNull(p.getAttribute(GENERIC_MAX_HEALTH)).getValue();
             p.setHealth(Math.min(healthValue, maxHealth));
             return -1;
-        }, t -> t >= 0));
+        }, t -> t >= 0, -1));
         //foodLevel modifier
         enableTrigger(new ValueModifier("alt_food_level", (p, v) -> {
             p.setFoodLevel(Math.min(v, 20));
             return -1;
-        }, t -> t >= 0));
+        }, t -> t >= 0, -1));
         //air modifier
         enableTrigger(new ValueModifier("alt_air", (p, v) -> {
             p.setRemainingAir(v);
             return -1;
-        }, t -> t >= 0));
+        }, t -> t >= 0, -1));
         //vector modifier for looking direction
         enableTrigger(new ValueModifier("alt_vector_look", (p, v) -> {
             p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(intToDouble(v))));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //facing vector modifier
         enableTrigger(new ValueModifier("alt_vector_face", (p, v) -> {
             var vec2d = p.getLocation().getDirection().setY(0);
             p.setVelocity(p.getVelocity().add(vec2d.multiply(intToDouble(v))));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //side vector modifier
         var yAxisUnit = new Vector(0, 1, 0);
         enableTrigger(new ValueModifier("alt_vector_cros", (p, v) -> {
             var vec2d = p.getLocation().getDirection().setY(0);
             p.setVelocity(p.getVelocity().add(vec2d.rotateAroundAxis(yAxisUnit, 90).multiply(intToDouble(v))));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //upward vector modifier
         enableTrigger(new ValueModifier("alt_vector_up", (p, v) -> {
             p.setVelocity(p.getVelocity().add(new Vector(0, intToDouble(v), 0)));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //vector modifier for x
         enableTrigger(new ValueModifier("alt_vector_x", (p, v) -> {
             p.setVelocity(p.getVelocity().add(new Vector(intToDouble(v), 0, 0)));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //vector modifier for y
         enableTrigger(new ValueModifier("alt_vector_y", (p, v) -> {
             p.setVelocity(p.getVelocity().add(new Vector(0, intToDouble(v), 0)));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
         //vector modifier for z
         enableTrigger(new ValueModifier("alt_vector_z", (p, v) -> {
             p.setVelocity(p.getVelocity().add(new Vector(0, 0, intToDouble(v))));
             return 0;
-        }, t -> t != 0));
+        }, t -> t != 0, 0));
 
         //-------------------------
         // Final Setup
@@ -175,11 +175,11 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         registrable.forEach(Registerable::register);
         Bukkit.getScheduler().runTaskTimer(this, () ->
                         generalTriggers.forEach(GeneralTrigger::trigger)
-                , 200, 1);
+                , 0, 1);
     }
 
     private double intToDouble(int doubleAsInt) {
-        return doubleAsInt / 1000.0D;
+        return doubleAsInt / DOUBLE_TO_INT_SCALE;
     }
 
     @Override

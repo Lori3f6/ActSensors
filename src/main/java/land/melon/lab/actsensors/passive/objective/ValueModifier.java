@@ -17,13 +17,15 @@ public class ValueModifier implements Registerable, GeneralTrigger {
     private final String objectiveName;
     private final ToIntBiFunction<Player, Integer> consumer;
     private final Predicate<Integer> validRangePredicate;
+    private final int initialScore;
     private Objective objective;
 
-    public ValueModifier(String objectiveName, ToIntBiFunction<Player, Integer> consumer, Predicate<Integer> validRangePredicate) {
-        this.objectiveName = "+"+objectiveName;
+    public ValueModifier(String objectiveName, ToIntBiFunction<Player, Integer> consumer, Predicate<Integer> validRangePredicate, int initialScore) {
+        this.objectiveName = "+" + objectiveName;
         this.consumer = consumer;
         this.validRangePredicate = validRangePredicate;
         objective = getObjective();
+        this.initialScore = initialScore;
     }
 
     private Objective getObjective() {
@@ -31,7 +33,7 @@ public class ValueModifier implements Registerable, GeneralTrigger {
     }
 
     public Objective registerObjective() {
-        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#85ed79") + objectiveName);
+        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#c4e35f") + objectiveName);
     }
 
     @Override
@@ -48,6 +50,9 @@ public class ValueModifier implements Registerable, GeneralTrigger {
         try {
             Bukkit.getOnlinePlayers().forEach(p -> {
                 var score = objective.getScore(p.getName());
+                if (!score.isScoreSet()) {
+                    score.setScore(initialScore);
+                }
                 var scoreValue = score.getScore();
                 if (validRangePredicate.test(scoreValue)) {
                     score.setScore(consumer.applyAsInt(p, scoreValue));
