@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.generator.WorldInfo;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +130,44 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             p.setRemainingAir(v);
             return -1;
         }, t -> t >= 0));
+        //vector modifier for looking direction
+        enableTrigger(new ValueModifier("alt_vector_look", (p, v) -> {
+            p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(intToDouble(v))));
+            return 0;
+        }, t -> t != 0));
+        //facing vector modifier
+        enableTrigger(new ValueModifier("alt_vector_face", (p, v) -> {
+            var vec2d = p.getLocation().getDirection().setY(0);
+            p.setVelocity(p.getVelocity().add(vec2d.multiply(intToDouble(v))));
+            return 0;
+        }, t -> t != 0));
+        //side vector modifier
+        var yAxisUnit = new Vector(0, 1, 0);
+        enableTrigger(new ValueModifier("alt_vector_cros", (p, v) -> {
+            var vec2d = p.getLocation().getDirection().setY(0);
+            p.setVelocity(p.getVelocity().add(vec2d.rotateAroundAxis(yAxisUnit, 90).multiply(intToDouble(v))));
+            return 0;
+        }, t -> t != 0));
+        //upward vector modifier
+        enableTrigger(new ValueModifier("alt_vector_up", (p, v) -> {
+            p.setVelocity(p.getVelocity().add(new Vector(0, intToDouble(v), 0)));
+            return 0;
+        }, t -> t != 0));
+        //vector modifier for x
+        enableTrigger(new ValueModifier("alt_vector_x", (p, v) -> {
+            p.setVelocity(p.getVelocity().add(new Vector(intToDouble(v), 0, 0)));
+            return 0;
+        }, t -> t != 0));
+        //vector modifier for y
+        enableTrigger(new ValueModifier("alt_vector_y", (p, v) -> {
+            p.setVelocity(p.getVelocity().add(new Vector(0, intToDouble(v), 0)));
+            return 0;
+        }, t -> t != 0));
+        //vector modifier for z
+        enableTrigger(new ValueModifier("alt_vector_z", (p, v) -> {
+            p.setVelocity(p.getVelocity().add(new Vector(0, 0, intToDouble(v))));
+            return 0;
+        }, t -> t != 0));
 
         //-------------------------
         // Final Setup
@@ -137,6 +176,10 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, () ->
                         generalTriggers.forEach(GeneralTrigger::trigger)
                 , 200, 1);
+    }
+
+    private double intToDouble(int doubleAsInt) {
+        return doubleAsInt / 1000.0D;
     }
 
     @Override
