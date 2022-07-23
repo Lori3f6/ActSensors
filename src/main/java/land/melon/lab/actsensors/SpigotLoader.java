@@ -1,6 +1,6 @@
 package land.melon.lab.actsensors;
 
-import land.melon.lab.actsensors.active.objective.PlayerEumerableObjective;
+import land.melon.lab.actsensors.active.objective.PlayerEnumerableObjective;
 import land.melon.lab.actsensors.active.objective.PlayerNumericalObjective;
 import land.melon.lab.actsensors.active.objective.SeparateObjective;
 import land.melon.lab.actsensors.active.tag.PlayerTagTrigger;
@@ -95,7 +95,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         //air objective
         enableTrigger(new PlayerNumericalObjective("air", LivingEntity::getRemainingAir));
         //biome objective
-        enableTrigger(new PlayerEumerableObjective<>("biome", 32768, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir));
+        enableTrigger(new PlayerEnumerableObjective<>("biome", 100000, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir));
         //temperature objective
         enableTrigger(new PlayerNumericalObjective("temperature", p -> (int) (p.getLocation().getBlock().getTemperature() * 10)));
 

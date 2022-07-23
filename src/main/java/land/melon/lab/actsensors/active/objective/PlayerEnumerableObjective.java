@@ -2,6 +2,7 @@ package land.melon.lab.actsensors.active.objective;
 
 import land.melon.lab.actsensors.GeneralTrigger;
 import land.melon.lab.actsensors.Registerable;
+import land.melon.lab.actsensors.SpigotLoader;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -11,12 +12,10 @@ import org.bukkit.scoreboard.Scoreboard;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
-public class PlayerEumerableObjective<T extends Enum<T>> implements Registerable, GeneralTrigger {
+public class PlayerEnumerableObjective<T extends Enum<T>> implements Registerable, GeneralTrigger {
     private final String objectiveName;
     private final Scoreboard scoreBoardEntry = Bukkit.getScoreboardManager().getMainScoreboard();
     private final Function<Player, Enum<T>> function;
@@ -25,18 +24,20 @@ public class PlayerEumerableObjective<T extends Enum<T>> implements Registerable
 
     private final Class<T> enumType;
 
+    private final Map<T, Integer> enumIdMap = new HashMap<>();
+
     private final File enumIdDir;
 
-    public PlayerEumerableObjective(String objectiveName, int capacity, Function<Player, Enum<T>> function, Class<T> clazz, File enumIdDir) {
+    public PlayerEnumerableObjective(String objectiveName, int capacity, Function<Player, Enum<T>> function, Class<T> clazz, File enumIdDir) {
         this.objectiveName = "+" + objectiveName;
         this.function = function;
         this.capacity = capacity;
         this.enumType = clazz;
         this.enumIdDir = enumIdDir;
         objective = getObjective();
-        try{
-            generateEnumId();
-        }catch (IOException e){
+        try {
+            generateEnumIdMap();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -71,27 +72,38 @@ public class PlayerEumerableObjective<T extends Enum<T>> implements Registerable
 
     }
 
-    private void generateEnumId() throws IOException {
+    private void generateEnumIdMap() throws IOException {
+        var usedId = new TreeSet<Integer>();
         var maxWide = 0;
-        var elements = new ArrayList<String>();
-        for (Object x : enumType.getEnumConstants()) {
-            var element = x.toString().toLowerCase(Locale.ROOT);
-            elements.add(element);
-            if (element.length() > maxWide)
-                maxWide = element.length();
+        for (T x : enumType.getEnumConstants()) {
+            var name = x.name();
+            maxWide = Math.max(name.length(), maxWide);
+            var hash = (int) (Integer.toUnsignedLong(name.toLowerCase(Locale.ROOT).replace("_", "").hashCode()) % capacity);
+            while (usedId.contains(hash))
+                hash++;
+            enumIdMap.put(x, hash);
+            usedId.add(hash);
         }
-        var enumName = enumType.getSimpleName().toLowerCase(Locale.ROOT);
-        var idFile = new File(enumIdDir, enumName + ".txt");
-        var fileWriter = new FileWriter(idFile, false);
-        var leftAlignFormat = "| %-" + (maxWide + 1) + "s| %-6s |\n";
-        fileWriter.append(String.format(leftAlignFormat, enumName, "ID"));
-        fileWriter.append(String.format(leftAlignFormat, "", ""));
-        for (String s : elements) {
-            fileWriter.write(String.format(leftAlignFormat, s, Integer.toUnsignedLong(s.hashCode()) % capacity));
-        }
-        fileWriter.flush();
-        fileWriter.close();
+        writeIDMapToFile(enumType.getSimpleName().toLowerCase(Locale.ROOT), maxWide);
     }
 
+    private void writeIDMapToFile(String enumName, int maxWide) throws IOException {
+        var idFile = new File(enumIdDir, enumName + ".txt");
+        idFile.delete();
+        idFile.createNewFile();
+        var fileWriter = new FileWriter(idFile, false);
+        var capacityLength = String.valueOf(capacity - 1).length();
+        var leftAlignFormat = "| %-" + maxWide + "s | %-" + capacityLength + "s |\n";
+        String sectionLine = "+" + "-".repeat(maxWide + 2) + "+" + "-".repeat(capacityLength + 2) + "+" + "\n";
+        fileWriter.append(sectionLine);
+        fileWriter.append(String.format(leftAlignFormat, enumName, "id"));
+        fileWriter.append(sectionLine);
+        for (T x : enumIdMap.keySet().stream().sorted((e1, e2) -> e1.name().compareToIgnoreCase(e2.name())).toList())
+            fileWriter.write(String.format(leftAlignFormat, x.name().toLowerCase(Locale.ROOT), enumIdMap.get(x)));
+        fileWriter.append(sectionLine);
+        fileWriter.flush();
+        fileWriter.close();
+        SpigotLoader.getPlugin(SpigotLoader.class).getLogger().info("Generated id table " + idFile.getAbsolutePath());
+    }
 }
 
