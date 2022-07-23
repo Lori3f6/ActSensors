@@ -12,7 +12,7 @@ public class PlayerTagTrigger implements PlayerLoginTrigger, GeneralTrigger {
     private final Predicate<Player> predicate;
 
     public PlayerTagTrigger(String tagName, Predicate<Player> predicate) {
-        this.tagName = tagName;
+        this.tagName = "+"+tagName;
         this.predicate = predicate;
     }
 

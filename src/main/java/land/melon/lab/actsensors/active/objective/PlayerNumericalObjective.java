@@ -1,7 +1,6 @@
 package land.melon.lab.actsensors.active.objective;
 
 import land.melon.lab.actsensors.GeneralTrigger;
-import land.melon.lab.actsensors.PlayerLoginTrigger;
 import land.melon.lab.actsensors.Registerable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -12,13 +11,13 @@ import org.bukkit.scoreboard.Scoreboard;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 
-public class PlayerObjective implements Registerable, GeneralTrigger {
+public class PlayerNumericalObjective implements Registerable, GeneralTrigger {
     private final String objectiveName;
     private final Scoreboard scoreBoardEntry = Bukkit.getScoreboardManager().getMainScoreboard();
     private final ToIntFunction<Player> prediction;
     private Objective objective;
 
-    public PlayerObjective(String objectiveName, ToIntFunction<Player> prediction) {
+    public PlayerNumericalObjective(String objectiveName, ToIntFunction<Player> prediction) {
         this.objectiveName = "+" + objectiveName;
         this.prediction = prediction;
         objective = getObjective();

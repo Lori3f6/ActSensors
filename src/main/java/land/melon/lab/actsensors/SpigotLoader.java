@@ -1,10 +1,12 @@
 package land.melon.lab.actsensors;
 
-import land.melon.lab.actsensors.active.objective.PlayerObjective;
+import land.melon.lab.actsensors.active.objective.PlayerEumerableObjective;
+import land.melon.lab.actsensors.active.objective.PlayerNumericalObjective;
 import land.melon.lab.actsensors.active.objective.SeparateObjective;
 import land.melon.lab.actsensors.active.tag.PlayerTagTrigger;
 import land.melon.lab.actsensors.passive.objective.ValueModifier;
 import org.bukkit.Bukkit;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,6 +18,7 @@ import org.bukkit.generator.WorldInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,23 +31,38 @@ public class SpigotLoader extends JavaPlugin implements Listener {
     private final List<PlayerLoginTrigger> playerLoginTriggers = new ArrayList<>();
     private final List<GeneralTrigger> generalTriggers = new ArrayList<>();
 
+    private final File dataDir = getDataFolder();
+
+    private final File enumIdDir = new File(dataDir, "enumIDTables");
+
     private final double DOUBLE_TO_INT_SCALE = 1000.0D;
 
     @Override
     public void onEnable() {
 
         //-------------------------
+        // generate enum id tables
+        //-------------------------
+        dataDir.mkdir();
+        enumIdDir.mkdir();
+
+        //-------------------------
         // Indicator tags
         //-------------------------
-
         //isSprinting tag
-        enableTrigger(new PlayerTagTrigger("isSprinting", Player::isSprinting));
+        enableTrigger(new PlayerTagTrigger("sprinting", Player::isSprinting));
         //isFlying tag
-        enableTrigger(new PlayerTagTrigger("isFlying", Player::isFlying));
+        enableTrigger(new PlayerTagTrigger("flying", Player::isFlying));
+        //isGrounded tag
+        enableTrigger(new PlayerTagTrigger("grounded", Player::isOnGround));
+        //isSwimming tag
+        enableTrigger(new PlayerTagTrigger("swimming", Player::isSwimming));
+        //isSleeping tag
+        enableTrigger(new PlayerTagTrigger("sleeping", Player::isSleeping));
         //isSneaking tag
-        enableTrigger(new PlayerTagTrigger("isSneaking", Player::isSneaking));
+        enableTrigger(new PlayerTagTrigger("sneaking", Player::isSneaking));
         //exposureToSky tag
-        enableTrigger(new PlayerTagTrigger("isExposing", p -> {
+        enableTrigger(new PlayerTagTrigger("exposing", p -> {
             var currentLoc = p.getLocation().add(0, 1.6, 0);
             for (int height = currentLoc.getBlockY(); height < 255; height++) {
                 currentLoc = currentLoc.add(0, 1, 0);
@@ -59,23 +77,28 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         //-------------------------
 
         //light objective
-        enableTrigger(new PlayerObjective("light", p ->
+        enableTrigger(new PlayerNumericalObjective("light", p ->
                 p.getLocation().getBlock().getLightLevel()
         ));
         //blockLight objective
-        enableTrigger(new PlayerObjective("block_light", p ->
+        enableTrigger(new PlayerNumericalObjective("block_light", p ->
                 p.getLocation().getBlock().getLightFromBlocks()
         ));
         //skyLight objective
-        enableTrigger(new PlayerObjective("sky_light", p ->
+        enableTrigger(new PlayerNumericalObjective("sky_light", p ->
                 p.getLocation().getBlock().getLightFromSky()
         ));
         //health objective
-        enableTrigger(new PlayerObjective("health", p -> (int) (p.getHealth() * DOUBLE_TO_INT_SCALE)));
+        enableTrigger(new PlayerNumericalObjective("health", p -> (int) (p.getHealth() * DOUBLE_TO_INT_SCALE)));
         //foodLevel objective
-        enableTrigger(new PlayerObjective("food_level", HumanEntity::getFoodLevel));
+        enableTrigger(new PlayerNumericalObjective("food_level", HumanEntity::getFoodLevel));
         //air objective
-        enableTrigger(new PlayerObjective("air", LivingEntity::getRemainingAir));
+        enableTrigger(new PlayerNumericalObjective("air", LivingEntity::getRemainingAir));
+        //biome objective
+        enableTrigger(new PlayerEumerableObjective<>("biome", 32768, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir));
+        //temperature objective
+        enableTrigger(new PlayerNumericalObjective("temperature", p -> (int) (p.getLocation().getBlock().getTemperature() * 10)));
+
 
         //-------------------------
         // Separate Indicator Objectives
@@ -145,7 +168,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         var yAxisUnit = new Vector(0, 1, 0);
         enableTrigger(new ValueModifier("alt_vector_cros", (p, v) -> {
             var vec2d = p.getLocation().getDirection().setY(0);
-            p.setVelocity(p.getVelocity().add(vec2d.rotateAroundAxis(yAxisUnit, 90).multiply(intToDouble(v))));
+            p.setVelocity(p.getVelocity().add(vec2d.rotateAroundAxis(yAxisUnit, Math.PI / 2).multiply(intToDouble(v))));
             return 0;
         }, t -> t != 0, 0));
         //upward vector modifier
