@@ -12,17 +12,17 @@ public class PlayerTagTrigger implements PlayerLoginTrigger, GeneralTrigger {
     private final Predicate<Player> predicate;
 
     public PlayerTagTrigger(String tagName, Predicate<Player> predicate) {
-        this.tagName = "+"+tagName;
+        this.tagName = "+" + tagName;
         this.predicate = predicate;
     }
 
     @Override
     public void trigger() {
-        Bukkit.getOnlinePlayers().forEach( p -> {
+        Bukkit.getOnlinePlayers().forEach(p -> {
             if (predicate.test(p)) {
                 if (p.getScoreboardTags().size() == 1024) {
                     Bukkit.getLogger().warning("player " + p.getName() + " is going to have more than 1024 tags. Abort to add new tag " + tagName);
-                }else{
+                } else {
                     p.addScoreboardTag(tagName);
                 }
             } else {
@@ -33,7 +33,7 @@ public class PlayerTagTrigger implements PlayerLoginTrigger, GeneralTrigger {
 
     @Override
     public void triggerOnPlayerLogin(Player player) {
-        if(predicate.test(player)){
+        if (predicate.test(player)) {
             player.addScoreboardTag(tagName);
         }
     }

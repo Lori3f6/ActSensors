@@ -20,13 +20,10 @@ public class PlayerEnumerableObjective<T extends Enum<T>> implements Registerabl
     private final Scoreboard scoreBoardEntry = Bukkit.getScoreboardManager().getMainScoreboard();
     private final Function<Player, Enum<T>> function;
     private final int capacity;
-    private Objective objective;
-
     private final Class<T> enumType;
-
     private final Map<T, Integer> enumIdMap = new HashMap<>();
-
     private final File enumIdDir;
+    private Objective objective;
 
     public PlayerEnumerableObjective(String objectiveName, int capacity, Function<Player, Enum<T>> function, Class<T> clazz, File enumIdDir) {
         this.objectiveName = "+" + objectiveName;

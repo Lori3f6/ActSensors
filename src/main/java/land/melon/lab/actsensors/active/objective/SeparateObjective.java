@@ -1,7 +1,7 @@
 package land.melon.lab.actsensors.active.objective;
 
-import land.melon.lab.actsensors.Registerable;
 import land.melon.lab.actsensors.GeneralTrigger;
+import land.melon.lab.actsensors.Registerable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -44,7 +44,7 @@ public class SeparateObjective implements Registerable, GeneralTrigger {
 
 
     public Objective registerObjective() {
-        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#ce79ed") + objectiveName );
+        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#ce79ed") + objectiveName);
     }
 
     @Override

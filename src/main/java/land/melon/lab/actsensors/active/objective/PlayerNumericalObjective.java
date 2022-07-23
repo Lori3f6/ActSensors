@@ -38,7 +38,7 @@ public class PlayerNumericalObjective implements Registerable, GeneralTrigger {
     }
 
     public Objective registerObjective() {
-        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#7d79ed") + objectiveName );
+        return scoreBoardEntry.registerNewObjective(objectiveName, "dummy", ChatColor.of("#7d79ed") + objectiveName);
     }
 
     @Override
