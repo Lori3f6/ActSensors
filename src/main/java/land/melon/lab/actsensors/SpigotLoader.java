@@ -6,6 +6,7 @@ import land.melon.lab.actsensors.active.objective.SeparateObjective;
 import land.melon.lab.actsensors.active.tag.PlayerTagTrigger;
 import land.melon.lab.actsensors.passive.objective.ValueModifier;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
@@ -15,14 +16,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.generator.WorldInfo;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
@@ -31,9 +30,11 @@ public class SpigotLoader extends JavaPlugin implements Listener {
     private final List<PlayerLoginTrigger> playerLoginTriggers = new ArrayList<>();
     private final List<GeneralTrigger> generalTriggers = new ArrayList<>();
 
+    private final Map<String, Map<Object, Integer>> globalEnumIDMap = new HashMap<>();
+
     private final File dataDir = getDataFolder();
 
-    private final File enumIdDir = new File(dataDir, "enumIDTables");
+    private final File enumIdDir = new File(dataDir, "enumIdTables");
 
     private final double DOUBLE_TO_INT_SCALE = 1000.0D;
 
@@ -61,6 +62,10 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new PlayerTagTrigger("sleeping", Player::isSleeping));
         //isSneaking tag
         enableTrigger(new PlayerTagTrigger("sneaking", Player::isSneaking));
+        //isGliding tag
+        enableTrigger(new PlayerTagTrigger("gliding", Player::isGliding));
+        //isGlowing tag
+        enableTrigger(new PlayerTagTrigger("glowing", Player::isGlowing));
         //exposureToSky tag
         enableTrigger(new PlayerTagTrigger("exposing", p -> {
             var currentLoc = p.getLocation().add(0, 1.6, 0);
@@ -95,10 +100,17 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         //air objective
         enableTrigger(new PlayerNumericalObjective("air", LivingEntity::getRemainingAir));
         //biome objective
-        enableTrigger(new PlayerEnumerableObjective<>("biome", 100000, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir));
+        enableTrigger(new PlayerEnumerableObjective<>("biome", 100000, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir, globalEnumIDMap));
         //temperature objective
         enableTrigger(new PlayerNumericalObjective("temperature", p -> (int) (p.getLocation().getBlock().getTemperature() * 10)));
-
+        //item in main hand objective
+        enableTrigger(new PlayerEnumerableObjective<>("item_hand0", 100000, p -> p.getInventory().getItemInMainHand().getType(), Material.class, enumIdDir, globalEnumIDMap));
+        //item in offhand objective
+        enableTrigger(new PlayerEnumerableObjective<>("item_hand1", 100000, p -> p.getInventory().getItemInOffHand().getType(), Material.class, enumIdDir, globalEnumIDMap));
+        // main hand item lore meta indicator
+        enableTrigger(new PlayerNumericalObjective("meta_hand0", p -> getItemSimpleMetaHash(p.getInventory().getItemInMainHand())));
+        // offhand item lore meta indicator
+        enableTrigger(new PlayerNumericalObjective("meta_hand1", p -> getItemSimpleMetaHash(p.getInventory().getItemInOffHand())));
 
         //-------------------------
         // Separate Indicator Objectives
@@ -232,5 +244,23 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             playerLoginTriggers.add(playerLoginTrigger);
         if (o instanceof Registerable registerable)
             registrable.add(registerable);
+    }
+
+    private int getItemSimpleMetaHash(ItemStack itemStack) {
+        if (!itemStack.hasItemMeta()) {
+            return 0;
+        } else {
+            var itemMeta = itemStack.getItemMeta();
+            var strBuilder = new StringBuilder();
+            if (itemMeta.hasCustomModelData()) {
+                strBuilder.append("::").append(itemMeta.getCustomModelData());
+            }
+            if (itemMeta.hasLore()) {
+                strBuilder.append("::").append(
+                        String.join("", itemMeta.getLore())
+                );
+            }
+            return strBuilder.isEmpty() ? 0 : (int) (Integer.toUnsignedLong(strBuilder.toString().hashCode()) % 100000000);
+        }
     }
 }

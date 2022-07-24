@@ -14,19 +14,19 @@ import java.util.function.ToIntFunction;
 public class PlayerNumericalObjective implements Registerable, GeneralTrigger {
     private final String objectiveName;
     private final Scoreboard scoreBoardEntry = Bukkit.getScoreboardManager().getMainScoreboard();
-    private final ToIntFunction<Player> prediction;
+    private final ToIntFunction<Player> toIntFunction;
     private Objective objective;
 
-    public PlayerNumericalObjective(String objectiveName, ToIntFunction<Player> prediction) {
+    public PlayerNumericalObjective(String objectiveName, ToIntFunction<Player> toIntFunction) {
         this.objectiveName = "+" + objectiveName;
-        this.prediction = prediction;
+        this.toIntFunction = toIntFunction;
         objective = getObjective();
     }
 
     @Override
     public void trigger() {
         try {
-            Bukkit.getOnlinePlayers().forEach(p -> objective.getScore(p.getName()).setScore(prediction.applyAsInt(p)));
+            Bukkit.getOnlinePlayers().forEach(p -> objective.getScore(p.getName()).setScore(toIntFunction.applyAsInt(p)));
         } catch (IllegalStateException e) {
             objective = getObjective();
             trigger();

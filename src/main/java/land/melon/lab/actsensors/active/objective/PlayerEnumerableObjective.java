@@ -18,24 +18,33 @@ import java.util.function.Function;
 public class PlayerEnumerableObjective<T extends Enum<T>> implements Registerable, GeneralTrigger {
     private final String objectiveName;
     private final Scoreboard scoreBoardEntry = Bukkit.getScoreboardManager().getMainScoreboard();
+
+    private final SpigotLoader pluginInstance = SpigotLoader.getPlugin(SpigotLoader.class);
     private final Function<Player, Enum<T>> function;
     private final int capacity;
     private final Class<T> enumType;
-    private final Map<T, Integer> enumIdMap = new HashMap<>();
+    private final Map<T, Integer> enumIdMap;
     private final File enumIdDir;
     private Objective objective;
 
-    public PlayerEnumerableObjective(String objectiveName, int capacity, Function<Player, Enum<T>> function, Class<T> clazz, File enumIdDir) {
+    @SuppressWarnings("unchecked")
+    public PlayerEnumerableObjective(String objectiveName, int capacity, Function<Player, Enum<T>> function, Class<T> clazz, File enumIdDir, Map<String, Map<Object, Integer>> globalEnumIDMap) {
         this.objectiveName = "+" + objectiveName;
         this.function = function;
         this.capacity = capacity;
         this.enumType = clazz;
         this.enumIdDir = enumIdDir;
         objective = getObjective();
-        try {
-            generateEnumIdMap();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (globalEnumIDMap.containsKey(enumType.getName())) {
+            enumIdMap = (Map) globalEnumIDMap.get(enumType.getName());
+        } else {
+            enumIdMap = new HashMap<>();
+            try {
+                generateEnumIdMap();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            globalEnumIDMap.put(enumType.getName(), (Map) enumIdMap);
         }
     }
 
@@ -72,35 +81,37 @@ public class PlayerEnumerableObjective<T extends Enum<T>> implements Registerabl
     private void generateEnumIdMap() throws IOException {
         var usedId = new TreeSet<Integer>();
         var maxWide = 0;
+        var collision = 0;
         for (T x : enumType.getEnumConstants()) {
             var name = x.name();
             maxWide = Math.max(name.length(), maxWide);
-            var hash = (int) (Integer.toUnsignedLong(name.toLowerCase(Locale.ROOT).replace("_", "").hashCode()) % capacity);
-            while (usedId.contains(hash))
-                hash++;
+            var hash = (int) (Integer.toUnsignedLong(name.toLowerCase(Locale.ROOT).hashCode()) % capacity);
+            if (usedId.contains(hash)) {
+                collision++;
+                do hash++; while (usedId.contains(hash));
+            }
             enumIdMap.put(x, hash);
             usedId.add(hash);
         }
-        writeIDMapToFile(enumType.getSimpleName().toLowerCase(Locale.ROOT), maxWide);
+        writeIDMapToFile(enumType.getName() + ".c" + collision + ".txt", maxWide);
     }
 
-    private void writeIDMapToFile(String enumName, int maxWide) throws IOException {
-        var idFile = new File(enumIdDir, enumName + ".txt");
-        idFile.delete();
+    private void writeIDMapToFile(String fileName, int maxWide) throws IOException {
+        var idFile = new File(enumIdDir, fileName);
         idFile.createNewFile();
         var fileWriter = new FileWriter(idFile, false);
         var capacityLength = String.valueOf(capacity - 1).length();
         var leftAlignFormat = "| %-" + maxWide + "s | %-" + capacityLength + "s |\n";
         String sectionLine = "+" + "-".repeat(maxWide + 2) + "+" + "-".repeat(capacityLength + 2) + "+" + "\n";
         fileWriter.append(sectionLine);
-        fileWriter.append(String.format(leftAlignFormat, enumName, "id"));
+        fileWriter.append(String.format(leftAlignFormat, enumType.getSimpleName().toLowerCase(Locale.ROOT), "id"));
         fileWriter.append(sectionLine);
         for (T x : enumIdMap.keySet().stream().sorted((e1, e2) -> e1.name().compareToIgnoreCase(e2.name())).toList())
             fileWriter.write(String.format(leftAlignFormat, x.name().toLowerCase(Locale.ROOT), enumIdMap.get(x)));
         fileWriter.append(sectionLine);
         fileWriter.flush();
         fileWriter.close();
-        SpigotLoader.getPlugin(SpigotLoader.class).getLogger().info("Generated id table " + idFile.getAbsolutePath());
+        pluginInstance.getLogger().info("Generated id table " + idFile.getAbsolutePath());
     }
 }
 
