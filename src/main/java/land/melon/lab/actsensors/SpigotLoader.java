@@ -107,11 +107,16 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         enableTrigger(new PlayerEnumerableObjective<>("item_hand0", 100000, p -> p.getInventory().getItemInMainHand().getType(), Material.class, enumIdDir, globalEnumIDMap));
         //item in offhand objective
         enableTrigger(new PlayerEnumerableObjective<>("item_hand1", 100000, p -> p.getInventory().getItemInOffHand().getType(), Material.class, enumIdDir, globalEnumIDMap));
-        // main hand item lore meta indicator
+        //main hand item lore meta indicator
         enableTrigger(new PlayerNumericalObjective("meta_hand0", p -> getItemSimpleMetaHash(p.getInventory().getItemInMainHand())));
-        // offhand item lore meta indicator
+        //offhand item lore meta indicator
         enableTrigger(new PlayerNumericalObjective("meta_hand1", p -> getItemSimpleMetaHash(p.getInventory().getItemInOffHand())));
-
+        //flying status indicator
+        enableTrigger(new PlayerNumericalObjective("flying", p -> p.isFlying() ? 1 : 0));
+        //flying speed indicator
+        enableTrigger(new PlayerNumericalObjective("flying_speed", p -> doubleToInt(p.getFlySpeed())));
+        //walk speed indicator
+        enableTrigger(new PlayerNumericalObjective("walk_speed", p -> doubleToInt(p.getWalkSpeed())));
         //-------------------------
         // Separate Indicator Objectives
         //-------------------------
@@ -208,6 +213,22 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             p.setNoDamageTicks(v);
             return -1;
         }, t -> t >= 0, -1));
+        //flying status modifier
+        enableTrigger(new ValueModifier("alt_flying", (p, v) -> {
+            p.setAllowFlight(v > 0);
+            p.setFlying(v > 0);
+            return -1;
+        }, t -> t >= 0, -1));
+        //flying speed modifier
+        enableTrigger(new ValueModifier("alt_flying_speed", (p, v) -> {
+            p.setFlySpeed((float) intToDouble(v));
+            return -1;
+        }, t -> t >= 0, -1));
+        //walking speed modifier
+        enableTrigger(new ValueModifier("alt_walking_speed", (p, v) -> {
+            p.setWalkSpeed((float) intToDouble(v));
+            return -1;
+        }, t -> t >= 0, -1));
 
         //-------------------------
         // Final Setup
@@ -220,6 +241,10 @@ public class SpigotLoader extends JavaPlugin implements Listener {
 
     private double intToDouble(int doubleAsInt) {
         return doubleAsInt / DOUBLE_TO_INT_SCALE;
+    }
+
+    private int doubleToInt(double value) {
+        return (int) (value * DOUBLE_TO_INT_SCALE);
     }
 
     @Override
