@@ -208,6 +208,11 @@ public class SpigotLoader extends JavaPlugin implements Listener {
             p.setVelocity(p.getVelocity().add(new Vector(0, 0, intToDouble(v))));
             return 0;
         }, t -> t != 0, 0));
+        //vector multiplier
+        enableTrigger(new ValueModifier("alt_vector_bypct", (p, v) -> {
+            p.setVelocity(p.getVelocity().multiply(intToDouble(v)));
+            return 0;
+        }, t -> t != 0, 0));
         //no damage tick modifier
         enableTrigger(new ValueModifier("alt_no_dmg_tick", (p, v) -> {
             p.setNoDamageTicks(v);
