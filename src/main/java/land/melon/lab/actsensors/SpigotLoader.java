@@ -100,7 +100,7 @@ public class SpigotLoader extends JavaPlugin implements Listener {
         //air objective
         enableTrigger(new PlayerNumericalObjective("air", LivingEntity::getRemainingAir));
         //biome objective
-        enableTrigger(new PlayerEnumerableObjective<>("biome", 100000, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir, globalEnumIDMap));
+        //enableTrigger(new PlayerEnumerableObjective<>("biome", 100000, p -> p.getLocation().getBlock().getBiome(), Biome.class, enumIdDir, globalEnumIDMap));
         //temperature objective
         enableTrigger(new PlayerNumericalObjective("temperature", p -> (int) (p.getLocation().getBlock().getTemperature() * 10)));
         //item in main hand objective
